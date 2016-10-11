@@ -103,6 +103,16 @@ int main(int argc, char* argv[]) {
 	int** graph = _blank_graph(range);
 	_draw_axes(graph, range, min, delta);
 
+	/*Create Basic Linear Function*/
+	for (int j = 0; j < (range->x + 1); ++j) {
+		double x = ((double)j * delta->x) + min->x;
+		double y = x;		// Function "definition"
+		int i = (y - min->y) / delta->y;
+		if (i > 0 && i < (range->y - 1)) {
+			graph[i][j] = 1;
+		}
+	}
+
 	print_graph(graph, range);
 	free(min);
 	free(max);
