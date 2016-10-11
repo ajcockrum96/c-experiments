@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 		double x = ((double)j * delta->x) + min->x;
 		double y = x;		// Function "definition"
 		int i = (int)((y - min->y) / delta->y);
-		if (i > 0 && i < (range->y - 1)) {
+		if (i >= 0 && i < (range->y + 1)) {
 			graph[i][j] = 1;
 		}
 	}
