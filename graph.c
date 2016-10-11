@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 struct iPoint {
 	int x;
@@ -52,16 +53,16 @@ int** _blank_graph(struct iPoint* range) {
 	return graph;
 }
 
-void _draw_axes(int** graph, struct iPoint* range, struct iPoint* min) {
+void _draw_axes(int** graph, struct iPoint* range, struct iPoint* min, struct dPoint* delta) {
 	for (int i = 0; i < (range->y + 1); ++i) {
 		for (int j = 0; j < (range->x + 1); ++j) {
-			if ((i == -(min->y)) && (j == -(min->x))) {
+			if ((i == (int)(-round(((min->y) / (delta->y))))) && (j == (int)(-round(((min->x) / (delta->x)))))) {
 				graph[i][j] = 1;
 			}
-			else if (i == -(min->y)) {
+			else if (i == (int)(-round(((min->y) / (delta->y))))) {
 				graph[i][j] = 2;
 			}
-			else if (j == -(min->x)) {
+			else if (j == (int)(-round(((min->x) / (delta->x))))) {
 				graph[i][j] = 3;
 			}
 		}
@@ -84,8 +85,8 @@ int main(int argc, char* argv[]) {
 	sscanf(argv[5], "%lf", &(delta->x));
 	sscanf(argv[6], "%lf", &(delta->y));
 
-	range -> x = (max -> x) - (min -> x);
-	range -> y = (max -> y) - (min -> y);
+	range -> x = (int)round(((max->x) - (min->x)) / delta->x);
+	range -> y = (int)round(((max->y) - (min->y)) / delta->y);
 
 	print_iPoint(min);
 	print_iPoint(max);
@@ -100,7 +101,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	int** graph = _blank_graph(range);
-	_draw_axes(graph, range, min);
+	_draw_axes(graph, range, min, delta);
 
 	print_graph(graph, range);
 	free(min);
