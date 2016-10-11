@@ -19,6 +19,33 @@ void print_graph(int** graph, struct iPoint* range) {
 	}
 }
 
+int** _blank_graph(struct iPoint* range) {
+	int** graph = malloc(sizeof(*graph) * (range->y + 1));
+	for (int i = 0; i < (range->y + 1); ++i) {
+		graph[i] = malloc(sizeof(*graph[i]) * (range->x + 1));
+		for (int j = 0; j < (range->x + 1); ++j) {
+			graph[i][j] = 0;
+		}
+	}
+	return graph;
+}
+
+void _draw_axes(int** graph, struct iPoint* range, struct iPoint* min) {
+	for (int i = 0; i < (range->y + 1); ++i) {
+		for (int j = 0; j < (range->x + 1); ++j) {
+			if ((i == -(min->y)) && (j == -(min->x))) {
+				graph[i][j] = 1;
+			}
+			else if (i == -(min->y)) {
+				graph[i][j] = 2;
+			}
+			else if (j == -(min->x)) {
+				graph[i][j] = 3;
+			}
+		}
+	}
+}
+
 int main(int argc, char* argv[]) {
 	if (argc <= 4) {
 		printf("Error.  Too few arguments\n");
@@ -44,13 +71,9 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	int** graph = malloc(sizeof(*graph) * (range -> y + 1));
-	for (int i = 0; i < (range -> y + 1); ++i) {
-		graph[i] = malloc(sizeof(*graph[i]) * (range -> x + 1));
-		for (int j = 0; j < (range -> x + 1); ++j) {
-			graph[i][j] = 0;
-		}
-	}
+	int** graph = _blank_graph(range);
+	_draw_axes(graph, range, min);
+
 	print_graph(graph, range);
 	free(min);
 	free(max);
