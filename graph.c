@@ -56,16 +56,16 @@ int main(int argc, char* argv[]) {
 	_draw_axes(graph, range, min, delta);
 
 	/*Create Basic Linear Function*/
-	for (int j = 0; j < (range->x + 1); ++j) {
+	/* for (int j = 0; j < (range->x + 1); ++j) {
 		double x = ((double)j * delta->x) + min->x;
 		double y = x;		// Function "definition"
 		int i = (int)((y - min->y) / delta->y);
 		if (i >= 0 && i < (range->y + 1)) {
 			graph[i][j] = 1;
 		}
-	}
+	} */
 
-	_poly_graph(graph, range, min, delta, 1, 1, 0);
+	_poly_graph(graph, range, min, delta, 1, 1.0, 0.0);
 
 	print_graph(graph, range);
 	free(min);
@@ -136,16 +136,24 @@ void _draw_axes(int** graph, struct iPoint* range, struct iPoint* min, struct dP
 void _poly_graph(int** graph, struct iPoint* range, struct iPoint* min, struct dPoint* delta, int order, ...) {
 	va_list args;
 	va_start(args, order);
+	double* coeffs = malloc(sizeof(*coeffs) * (order + 1));
+	for (int i = order; i >= 0; --i) {
+		coeffs[i] = va_arg(args, double);
+	}
+	va_end(args);
 
 	for (int j = 0; j < (range->x + 1); ++j) {
-		double x = ((double)j * delta->x) + min->x;
+		double x = ((double)(j) * delta->x) + min->x;
 		double y = 0;
-		for (int p = order; p >= 0; --p) {
-			y += va_arg(args, double) * pow(x, p);
+		for (int p = order; p > 0; --p) {
+			y += coeffs[p] * pow((double)x, (double)p);
+			printf("(%.2lf, %.2lf)\n", x, y);
 		}
+		y += coeffs[0];
 		int i = (int)((y - min->y) / delta->y);
 		if (i >= 0 && i < (range->y + 1)) {
 			graph[i][j] = 1;
 		}
 	}
+	free(coeffs);
 }
