@@ -13,7 +13,20 @@ void print_iPoint(struct iPoint* point) {
 void print_graph(int** graph, struct iPoint* range) {
 	for (int i = range -> y; i >= 0; --i) {
 		for (int j = 0; j < (range -> x + 1); ++j) {
-			printf("%d", graph[i][j]);
+			switch (graph[i][j]) {
+				case(0):
+					printf(" ");
+					break;
+				case(1):
+					printf("+");
+					break;
+				case(2):
+					printf("-");
+					break;
+				case(3):
+					printf("|");
+					break;
+			}
 		}
 		printf("\n");
 	}
