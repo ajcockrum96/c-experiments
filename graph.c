@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 	sscanf(argv[2], "%d",  &(min->y));
 	sscanf(argv[3], "%d",  &(max->x));
 	sscanf(argv[4], "%d",  &(max->y));
-	sscanf(argv[5], "%lf", &(delta->y));
+	sscanf(argv[5], "%lf", &(delta->x));
 	sscanf(argv[6], "%lf", &(delta->y));
 
 	range -> x = (max -> x) - (min -> x);
