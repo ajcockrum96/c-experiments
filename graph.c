@@ -10,6 +10,15 @@ void print_iPoint(struct iPoint* point) {
 	printf("(%d, %d)\n", point -> x, point -> y);
 }
 
+void print_graph(int** graph, struct iPoint* range) {
+	for (int i = range -> y; i >= 0; --i) {
+		for (int j = 0; j < (range -> x + 1); ++j) {
+			printf("%d", graph[i][j]);
+		}
+		printf("\n");
+	}
+}
+
 int main(int argc, char* argv[]) {
 	if (argc <= 4) {
 		printf("Error.  Too few arguments\n");
@@ -42,6 +51,7 @@ int main(int argc, char* argv[]) {
 			graph[i][j] = 0;
 		}
 	}
+	print_graph(graph);
 	free(min);
 	free(max);
 	free(range);
