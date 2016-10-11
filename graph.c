@@ -13,10 +13,10 @@ void print_iPoint(struct iPoint* point) {
 int main(int argc, char* argv[]) {
 	struct iPoint* min = malloc(sizeof(*min));
 	struct iPoint* max = malloc(sizeof(*max));
-	sscanf(argv[1], "%d", min -> x);
-	sscanf(argv[2], "%d", min -> y);
-	sscanf(argv[3], "%d", max -> x);
-	sscanf(argv[4], "%d", max -> y);
+	sscanf(argv[1], "%d", &(min -> x));
+	sscanf(argv[2], "%d", &(min -> y));
+	sscanf(argv[3], "%d", &(max -> x));
+	sscanf(argv[4], "%d", &(max -> y));
 	print_iPoint(min);
 	print_iPoint(max);
 	free(min);
