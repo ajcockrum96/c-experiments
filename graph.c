@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 			graph[i][j] = 0;
 		}
 	}
-	print_graph(graph);
+	print_graph(graph, range);
 	free(min);
 	free(max);
 	free(range);
