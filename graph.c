@@ -66,6 +66,8 @@ int main(int argc, char* argv[]) {
 	} */
 
 	_poly_graph(graph, range, min, delta, 1, 1.0, 0.0);
+	_poly_graph(graph, range, min, delta, 2, 1.0, 0.0, 0.0);
+	_poly_graph(graph, range, min, delta, 3, 1.0, 0.0, 0.0, 0.0);
 
 	print_graph(graph, range);
 	free(min);
@@ -147,7 +149,6 @@ void _poly_graph(int** graph, struct iPoint* range, struct iPoint* min, struct d
 		double y = 0;
 		for (int p = order; p > 0; --p) {
 			y += coeffs[p] * pow((double)x, (double)p);
-			printf("(%.2lf, %.2lf)\n", x, y);
 		}
 		y += coeffs[0];
 		int i = (int)((y - min->y) / delta->y);
