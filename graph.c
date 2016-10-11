@@ -140,7 +140,7 @@ void _poly_graph(int** graph, struct iPoint* range, struct iPoint* min, struct d
 	for (int j = 0; j < (range->x + 1); ++j) {
 		double x = ((double)j * delta->x) + min->x;
 		double y = 0;
-		for (int p = order; p >= 0; ++p) {
+		for (int p = order; p >= 0; --p) {
 			y += va_arg(args, double) * pow(x, p);
 		}
 		int i = (int)((y - min->y) / delta->y);
