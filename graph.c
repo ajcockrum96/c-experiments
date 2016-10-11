@@ -40,10 +40,6 @@ int main(int argc, char* argv[]) {
 	range -> x = (int)round(((max->x) - (min->x)) / delta->x);
 	range -> y = (int)round(((max->y) - (min->y)) / delta->y);
 
-	print_iPoint(min);
-	print_iPoint(max);
-	print_iPoint(range);
-	print_dPoint(delta);
 	if (range -> x < 0 || range -> y < 0) {
 		printf("Error, silly arguments.\n");
 		free(min);
@@ -54,16 +50,6 @@ int main(int argc, char* argv[]) {
 
 	int** graph = _blank_graph(range);
 	_draw_axes(graph, range, min, delta);
-
-	/*Create Basic Linear Function*/
-	/* for (int j = 0; j < (range->x + 1); ++j) {
-		double x = ((double)j * delta->x) + min->x;
-		double y = x;		// Function "definition"
-		int i = (int)((y - min->y) / delta->y);
-		if (i >= 0 && i < (range->y + 1)) {
-			graph[i][j] = 1;
-		}
-	} */
 
 	_poly_graph(graph, range, min, delta, 1, 1.0, 0.0);
 	_poly_graph(graph, range, min, delta, 2, 1.0, 0.0, 0.0);
