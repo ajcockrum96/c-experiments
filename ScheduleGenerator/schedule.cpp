@@ -473,7 +473,7 @@ void free_schedule(int** schedule, int numDays) {
 void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour) {
 	for (int i = 0; i < numHours * periodsPerHour; ++i) {
 		for (int j = 0; j < numDays; ++j) {
-			fprintf(output, "%d", schedule[j][i]);
+			fprintf(output, "%d ", schedule[j][i]);
 		}
 		fprintf(output, "\n");
 	}
@@ -493,25 +493,33 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 	bool abort = false;
 	if ((numClasses > 0 && numOptions != NULL) && (classTimeArrays != NULL && schedule != NULL)) {
 		for (int i = 0; i < numOptions[numClasses - 1]; ++i) {
+			/* Check for overlap */
 			for (int j = 0; j < numDays; ++j) {
 				abort = false;
 				int start = classTimeArrays[numClasses - 1][j][i];
 				int end = start + classLengthArrays[numClasses - 1][j][i];
-				/* Check for overlap */
 				for (int k = start; k < end; ++k) {
 					if (schedule[j][k] != 0) {
 						abort = true;
+						break;
 					}
 				}
-				/* Add if no overlap */
-				if (!abort) {
+				if (abort) {
+					break;
+				}
+			}
+			/* Add if no overlap */
+			if (!abort) {
+				for (int j = 0; j < numDays; ++j) {
+					int start = classTimeArrays[numClasses - 1][j][i];
+					int end = start + classLengthArrays[numClasses - 1][j][i];
 					for (int k = start; k < end; ++k) {
 						schedule[j][k] = numClasses;
 					}
 				}
-				else {
-					break;
-				}
+			}
+			else {
+				continue;
 			}
 			if (numClasses > 1) {
 				generate_schedule(numClasses - 1, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
