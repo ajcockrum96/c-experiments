@@ -6,8 +6,10 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 int** blank_schedule(int numDays, int numHours, int periodsPerHour);
 void free_schedule(int** schedule, int numDays);
 void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour);
+void free_class_times(int*** classTimes, int numClasses, int numDays);
 
 int main(int argc, char* argv[]) {
+	int numClasses = 1;
 	int numDays = 5;
 	int numHours = 10;
 	int periodsPerHour = 2;
@@ -15,18 +17,35 @@ int main(int argc, char* argv[]) {
 	int numOptions[] = {
 		1
 	};
-	int classTimeArrays[][] = {
-		{
-			{1},
-			{0},
-			{1},
-			{0},
-			{1}
+	int*** classTimeArrays = (int***)malloc(sizeof(*classTimeArrays) * numClasses);
+	for (int i = 0; i < numClasses; ++i) {
+		classTimeArrays[i] = (int**)malloc(sizeof(*classTimeArrays[i]) * numDays);
+		for (int j = 0; j < numDays; ++j) {
+			classTimeArrays[i][j] = (int*)malloc(sizeof(*classTimeArrays[i][j]) * numOptions[i]);
 		}
-	};
-	generate_schedule(0, numDays, numHours, periodsPerHour, NULL, NULL, NULL, schedule);
-	print_schedule(schedule, numDays, numHours, periodsPerHour);
+	}
+	classTimeArrays[0][0][0] = 0;
+	classTimeArrays[0][1][0] = 0;
+	classTimeArrays[0][2][0] = 0;
+	classTimeArrays[0][3][0] = 0;
+	classTimeArrays[0][4][0] = 0;
+
+	int*** classLengthArrays = (int***)malloc(sizeof(*classLengthArrays) * numClasses);
+	for (int i = 0; i < numClasses; ++i) {
+		classLengthArrays[i] = (int**)malloc(sizeof(*classLengthArrays[i]) * numDays);
+		for (int j = 0; j < numDays; ++j) {
+			classLengthArrays[i][j] = (int*)malloc(sizeof(*classLengthArrays[i][j]) * numOptions[i]);
+		}
+	}
+	classLengthArrays[0][0][0] = 2;
+	classLengthArrays[0][1][0] = 0;
+	classLengthArrays[0][2][0] = 2;
+	classLengthArrays[0][3][0] = 0;
+	classLengthArrays[0][4][0] = 2;
+	generate_schedule(1, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
 	free(schedule);
+	free_class_times(classTimeArrays, numClasses, numDays);
+	free_class_times(classLengthArrays, numClasses, numDays);
 	return EXIT_SUCCESS;
 }
 
@@ -55,6 +74,16 @@ void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHou
 		}
 		printf("\n");
 	}
+}
+
+void free_class_times(int*** classTimes, int numClasses, int numDays) {
+	for (int i = 0; i < numClasses; ++i) {
+		for (int j = 0; j < numDays; ++j) {
+			free(classTimes[i][j]);
+		}
+		free(classTimes[i]);
+	}
+	free(classTimes);
 }
 
 void generate_schedule(int numClasses, int numDays, int numHours, int periodsPerHour, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule) {
