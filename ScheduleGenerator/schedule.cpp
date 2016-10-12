@@ -123,8 +123,13 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 					break;
 				}
 			}
-			print_schedule(schedule, numDays, numHours, periodsPerHour);
-			printf("\n");
+			if (numClasses > 1) {
+				generate_schedule(numClasses - 1, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
+			}
+			else {
+				print_schedule(schedule, numDays, numHours, periodsPerHour);
+				printf("\n");
+			}
 			/* Undo action */
 			for (int j = 0; j < numDays; ++j) {
 				int start = classTimeArrays[numClasses - 1][j][i];
