@@ -2,15 +2,26 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+void read_input(FILE* input, int*** classTimeArrays, int*** classLength Arrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin , int periodsPerHour);
 void generate_schedule(int numClasses, int numDays, int numHours, int periodsPerHour, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule);
 int** blank_schedule(int numDays, int numHours, int periodsPerHour);
 void free_schedule(int** schedule, int numDays);
 void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour);
 void free_class_times(int*** classTimes, int numClasses, int numDays);
 
-FILE* output = fopen("output_schedule.txt", "w");
 
-int main(int argc, char* argv[]) {
+const FILE* output = fopen("output_schedule.txt", "w");
+
+int main(int argc, const char* argv[]) {
+	if (argc < 1) {
+		printf("Error, no input file name.\n");
+		return EXIT_FAILURE;
+	}
+	FILE* input = fopen(argv[1], "r");
+	if (input == NULL) {
+		printf("Error, could not open input file.\n");
+		return EXIT_FAILURE;
+	}
 	int numClasses = 6;
 	int numDays = 5;
 	int numHours = 10;
@@ -198,41 +209,7 @@ int main(int argc, char* argv[]) {
 	classTimeArrays[1][4][12] = 0;
 
 	/* MA 35100 */
-	classTimeArrays[0][0][0] = 4;
-	classTimeArrays[0][1][0] = 0;
-	classTimeArrays[0][2][0] = 4;
-	classTimeArrays[0][3][0] = 0;
-	classTimeArrays[0][4][0] = 4;
-
-	classTimeArrays[0][0][1] = 6;
-	classTimeArrays[0][1][1] = 0;
-	classTimeArrays[0][2][1] = 6;
-	classTimeArrays[0][3][1] = 0;
-	classTimeArrays[0][4][1] = 6;
-
-	classTimeArrays[0][0][2] = 8;
-	classTimeArrays[0][1][2] = 0;
-	classTimeArrays[0][2][2] = 8;
-	classTimeArrays[0][3][2] = 0;
-	classTimeArrays[0][4][2] = 8;
-
-	classTimeArrays[0][0][3] = 0;
-	classTimeArrays[0][1][3] = 6;
-	classTimeArrays[0][2][3] = 0;
-	classTimeArrays[0][3][3] = 6;
-	classTimeArrays[0][4][3] = 0;
-
-	classTimeArrays[0][0][4] = 0;
-	classTimeArrays[0][1][4] = 12;
-	classTimeArrays[0][2][4] = 0;
-	classTimeArrays[0][3][4] = 12;
-	classTimeArrays[0][4][4] = 0;
-
-	classTimeArrays[0][0][5] = 0;
-	classTimeArrays[0][1][5] = 15;
-	classTimeArrays[0][2][5] = 0;
-	classTimeArrays[0][3][5] = 15;
-	classTimeArrays[0][4][5] = 0;
+	/* In file */
 
 	int*** classLengthArrays = (int***)malloc(sizeof(*classLengthArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
@@ -448,6 +425,7 @@ int main(int argc, char* argv[]) {
 	free(schedule);
 	free_class_times(classTimeArrays, numClasses, numDays);
 	free_class_times(classLengthArrays, numClasses, numDays);
+	fclose(input);
 	fclose(output);
 	return EXIT_SUCCESS;
 }
@@ -538,4 +516,7 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 			}
 		}
 	}
+}
+
+void read_input(FILE* input, int*** classTimeArrays, int*** classLength Arrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin, int periodsPerHour) {
 }
