@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 	int periodsPerHour = 2;
 	int** schedule = blank_schedule(numDays, numHours, periodsPerHour);
 	int numOptions[] = {
-		1
+		2
 	};
 	int*** classTimeArrays = (int***)malloc(sizeof(*classTimeArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
@@ -30,6 +30,12 @@ int main(int argc, char* argv[]) {
 	classTimeArrays[0][3][0] = 0;
 	classTimeArrays[0][4][0] = 0;
 
+	classTimeArrays[0][0][1] = 1;
+	classTimeArrays[0][1][1] = 0;
+	classTimeArrays[0][2][1] = 1;
+	classTimeArrays[0][3][1] = 0;
+	classTimeArrays[0][4][1] = 1;
+
 	int*** classLengthArrays = (int***)malloc(sizeof(*classLengthArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
 		classLengthArrays[i] = (int**)malloc(sizeof(*classLengthArrays[i]) * numDays);
@@ -42,6 +48,13 @@ int main(int argc, char* argv[]) {
 	classLengthArrays[0][2][0] = 2;
 	classLengthArrays[0][3][0] = 0;
 	classLengthArrays[0][4][0] = 2;
+
+	classLengthArrays[0][0][1] = 2;
+	classLengthArrays[0][1][1] = 0;
+	classLengthArrays[0][2][1] = 2;
+	classLengthArrays[0][3][1] = 0;
+	classLengthArrays[0][4][1] = 2;
+
 	generate_schedule(1, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
 	free(schedule);
 	free_class_times(classTimeArrays, numClasses, numDays);
@@ -87,16 +100,32 @@ void free_class_times(int*** classTimes, int numClasses, int numDays) {
 }
 
 void generate_schedule(int numClasses, int numDays, int numHours, int periodsPerHour, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule) {
+	bool abort = false;
 	if ((numClasses > 0 && numOptions != NULL) && (classTimeArrays != NULL && schedule != NULL)) {
 		for (int i = 0; i < numOptions[numClasses - 1]; ++i) {
 			for (int j = 0; j < numDays; ++j) {
+				abort = false;
 				int start = classTimeArrays[numClasses - 1][j][i];
 				int end = start + classLengthArrays[numClasses - 1][j][i];
+				/* Check for overlap */
 				for (int k = start; k < end; ++k) {
-					schedule[j][k] = numClasses - 1;
+					if (schedule[j][k] != 0) {
+						abort = true;
+					}
+				}
+				/* Add if no overlap */
+				if (!abort) {
+					for (int k = start; k < end; ++k) {
+						schedule[j][k] = numClasses;
+					}
+				}
+				else {
+					break;
 				}
 			}
 			print_schedule(schedule, numDays, numHours, periodsPerHour);
+			printf("\n");
+			/* Undo action */
 			for (int j = 0; j < numDays; ++j) {
 				int start = classTimeArrays[numClasses - 1][j][i];
 				int end = start + classLengthArrays[numClasses - 1][j][i];
