@@ -3,20 +3,22 @@
 #include <stdbool.h>
 
 void generate_schedule(int numClasses, int numDays, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule);
-int** blank_schedule(int numDays);
+int** blank_schedule(int numDays, int numHours, int periodsPerHour);
 void free_schedule(int** schedule, int numDays);
+void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour);
 
 int main(int argc, char* argv[]) {
 	int numDays = 5;
-	int** schedule = blank_schedule(numDays);
+	int numHours = 10;
+	int periodsPerHour = 2;
+	int** schedule = blank_schedule(numDays, numHours, periodsPerHour);
 	generate_schedule(0, numDays, NULL, NULL, NULL, schedule);
+	print_schedule(schedule, numDays, numHours, periodsPerHour);
 	free(schedule);
 	return EXIT_SUCCESS;
 }
 
-int** blank_schedule(int numDays) {
-	int numHours = 10;
-	int periodsPerHour = 2;
+int** blank_schedule(int numDays, int numHours, int periodsPerHour) {
 	int** schedule = (int**)malloc(sizeof(*schedule) * numDays);
 	for (int i = 0; i < numDays; ++i) {
 		schedule[i] = (int*)malloc(sizeof(*schedule[i]) * numHours * periodsPerHour);
@@ -32,6 +34,15 @@ void free_schedule(int** schedule, int numDays) {
 		free(schedule[i]);
 	}
 	free(schedule);
+}
+
+void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour) {
+	for (int i = 0; i < numHours * periodsPerHour; ++i) {
+		for (int j = 0; j < numDays; ++j) {
+			printf("%d", schedule[j][i]);
+		}
+		printf("\n");
+	}
 }
 
 void generate_schedule(int numClasses, int numDays, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule) {
