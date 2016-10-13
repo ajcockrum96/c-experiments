@@ -1,19 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <ctype.h>
 
-void read_input(FILE* input, int*** classTimeArrays, int*** classLength Arrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin , int periodsPerHour);
+struct Time {
+	int value;
+	struct Time* next;
+	struct Time* prev;
+};
+
+struct Day {
+	char value;
+	struct Day* next;
+	struct Day* prev;
+};
+
+void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin , int periodsPerHour);
 void generate_schedule(int numClasses, int numDays, int numHours, int periodsPerHour, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule);
 int** blank_schedule(int numDays, int numHours, int periodsPerHour);
 void free_schedule(int** schedule, int numDays);
 void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour);
 void free_class_times(int*** classTimes, int numClasses, int numDays);
+int _count_lines(FILE* file);
+int _round_to(int value, int round);
 
 
-const FILE* output = fopen("output_schedule.txt", "w");
+FILE* output = fopen("output_schedule.txt", "w");
 
 int main(int argc, const char* argv[]) {
-	if (argc < 1) {
+	if (!(argc > 1)) {
 		printf("Error, no input file name.\n");
 		return EXIT_FAILURE;
 	}
@@ -147,17 +163,84 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin, int periodsPerHour) {
 	int numLines = _count_lines(input);
 	int lineLen = 8 + 5 + 1 + 5;
-	char** lines = malloc(sizeof(*lines) * numLines);
+	char** lines = (char**)malloc(sizeof(*lines) * numLines);
 	for (int i = 0; i < numLines; ++i) {
-		lines[i] = malloc(sizeof(*lines[i]) * lineLen);
+		lines[i] = (char*)malloc(sizeof(*lines[i]) * lineLen);
 		fgets(lines[i], lineLen, input);
-		printf("%s", lines[i]);
+	}
+	
+	/* Linked Lists of Days, Hours, and Minutes */
+
+	struct Time* hour = malloc(sizeof(*hour) * 12);
+	for (int i = 0; i < 12; ++i) {
+		hour[i]->value = i + 1;
+		if ((i + 1) == 12) {
+			hour[i]->next = hour[0];
+		}
+		else {
+			hour[i]->next = hour[i + 1];
+		}
+		if (i == 0) {
+			hour[i]->prev = hour[11];
+		}
+		else {
+			hour[i]->prev = hour[i - 1];
+		}
+	}
+	struct Time* min = malloc(sizeof(*min) * 60);
+	for (int i = 0; i < 60; ++i) {
+		min[i]->value = i + 1;
+		if ((i + 1) == 60) {
+			min[i]->next = min[0];
+		}
+		else {
+			min[i]->next = min[i + 1];
+		}
+		if (i == 0) {
+			min[i]->prev = min[59];
+		}
+		else {
+			min[i]->prev = min[i - 1];
+		}
+	}
+	struct Day* day = malloc(sizeof(*day) * 7);
+	day[0]->value = 'S';
+	day[1]->value = 'M';
+	day[2]->value = 'T';
+	day[3]->value = 'W';
+	day[4]->value = 'R';
+	day[5]->value = 'F';
+	day[6]->value = 'E';
+	for (int i = 0; i < 60; ++i) {
+		if ((i + 1) == 7) {
+			min[i]->next = min[0];
+		}
+		else {
+			min[i]->next = min[i + 1];
+		}
+		if (i == 0) {
+			min[i]->prev = min[6];
+		}
+		else {
+			min[i]->prev = min[i - 1];
+		}
+	}
+
+	int currentClass = 0;
+	char* classInfo  = malloc(sizeof(*classInfo) * lineLen);
+	for (int i = 0; i < numLines; ++i) {
+		if (isdigit(lines[i][0])) {
+			currentClass = (int)lines[i][0] - 48;
+		}
+		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass < numClasses)) {
+			strcpy(classInfo, lines[i]);
+			/* Add class info to class___Arrays */
+		}
 	}
 }
 
 int _count_lines(FILE* file) {
 	int count = 0;
-	int pos = SEEK_CUR;
 	fseek(file, 0, SEEK_SET);
 	while (!feof(file)) {
 		char temp = fgetc(file);
@@ -165,7 +248,7 @@ int _count_lines(FILE* file) {
 			++count;
 		}
 	}
-	fseek(file, 0, pos);
+	fseek(file, 0, SEEK_SET);
 	return count;
 }
 
