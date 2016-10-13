@@ -19,7 +19,7 @@ struct Day {
 	struct Day* prev;
 };
 
-void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin , int periodsPerHour);
+void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int* optionCount, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin , int periodsPerHour);
 void generate_schedule(int numClasses, int numDays, int numHours, int periodsPerHour, int* numOptions, int*** classTimeArrays, int*** classLengthArrays, int** schedule);
 int** blank_schedule(int numDays, int numHours, int periodsPerHour);
 void free_schedule(int** schedule, int numDays);
@@ -52,33 +52,18 @@ int main(int argc, const char* argv[]) {
 	int numHours = 10;
 	int periodsPerHour = 2;
 	int** schedule = blank_schedule(numDays, numHours, periodsPerHour);
-	int numOptions[] = {
-		6,
-		14,
-		1,
-		11,
-		1,
-		2
-	};
+	int* numOptions = (int*)malloc(sizeof(*numOptions) * numClasses);
 	int*** classTimeArrays = (int***)malloc(sizeof(*classTimeArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
 		classTimeArrays[i] = (int**)malloc(sizeof(*classTimeArrays[i]) * numDays);
-		for (int j = 0; j < numDays; ++j) {
-			classTimeArrays[i][j] = (int*)malloc(sizeof(*classTimeArrays[i][j]) * numOptions[i]);
-		}
 	}
-	_zero_time_array(classTimeArrays, numClasses, numDays, numOptions);
 
 	int*** classLengthArrays = (int***)malloc(sizeof(*classLengthArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
 		classLengthArrays[i] = (int**)malloc(sizeof(*classLengthArrays[i]) * numDays);
-		for (int j = 0; j < numDays; ++j) {
-			classLengthArrays[i][j] = (int*)malloc(sizeof(*classLengthArrays[i][j]) * numOptions[i]);
-		}
 	}
-	_zero_time_array(classLengthArrays, numClasses, numDays, numOptions);
 
-	read_input(input, classTimeArrays, classLengthArrays, numClasses, numDays, 'M', numHours, 7, 30, periodsPerHour);
+	read_input(input, classTimeArrays, classLengthArrays, numOptions, numClasses, numDays, 'M', numHours, 7, 30, periodsPerHour);
 	generate_schedule(numClasses, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
 	free(schedule);
 	free_class_times(classTimeArrays, numClasses, numDays);
@@ -176,21 +161,26 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 	}
 }
 
-void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin, int periodsPerHour) {
+void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int* optionCount, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin, int periodsPerHour) {
 	int numLines    = _count_lines(input);
 	int lineLen     = 8 + 5 + 1 + 5;
 	char** lines    = (char**)malloc(sizeof(*lines) * numLines);
-
 	for (int i = 0; i < numLines; ++i) {
 		lines[i] = (char*)malloc(sizeof(*lines[i]) * lineLen);
+		_zero_string(lines[i], lineLen);
 		fgets(lines[i], lineLen, input);
 	}
-	int* optionCount = (int*)malloc(sizeof(*optionCount) * numClasses);
 	_zero_array(optionCount, numClasses);
 	_count_options(lines, numLines, numClasses, optionCount);
 	for (int i = 0; i < numClasses; ++i) {
 		printf("%d: %d\n", i + 1, optionCount[i]);
+		for (int j = 0; j < numDays; ++j) {
+			classTimeArrays[i][j]   = (int*)malloc(sizeof(*classTimeArrays[i][j]) * optionCount[i]);
+			classLengthArrays[i][j] = (int*)malloc(sizeof(*classLengthArrays[i][j]) * optionCount[i]);
+		}
 	}
+	_zero_time_array(classTimeArrays, numClasses, numDays, optionCount);
+	_zero_time_array(classLengthArrays, numClasses, numDays, optionCount);
 	
 	/* Linked Lists of Days, Hours, and Minutes */
 
@@ -266,9 +256,12 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 			currentClass = (int)lines[i][0] - 48;
 			currentOption = 0;
 		}
-		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
+		else if (isspace(lines[i][0])) {
+			currentClass = 0;
+		}
+		else if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
 			strcpy(classInfo, lines[i]);
-			sscanf(classInfo, "%s %d:%d-%d:%d", classDays, &startHour, &startMin, &endHour, &endMin);
+			sscanf(classInfo, "%s %d:%d-%d:%d ", classDays, &startHour, &startMin, &endHour, &endMin);
 			startPeriod = (_count_hours(firstHour, startHour, hour) * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(startMin, 30), min)) / periodLen;
 			endPeriod   = (_count_hours(firstHour, endHour, hour)   * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(endMin, 30), min)) / periodLen;
 			for (int j = 0; j < strlen(classDays); ++j) {
@@ -277,9 +270,6 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 				classLengthArrays[currentClass - 1][dayIndex][currentOption] = endPeriod - startPeriod;
 			}
 			++currentOption;
-		}
-		if (isspace(lines[i][0])) {
-			currentClass = 0;
 		}
 	}
 	for (int i = 0; i < numLines; ++i) {
@@ -312,6 +302,8 @@ void _count_options(char** lines, int numLines, int numClasses, int* optionCount
 			currentClass = (int)lines[i][0] - 48;
 		}
 		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
+			if (currentClass == 2) {
+			}
 			++(optionCount[currentClass - 1]);
 		}
 		if (isspace(lines[i][0])) {
