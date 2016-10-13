@@ -26,12 +26,14 @@ void free_schedule(int** schedule, int numDays);
 void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHour);
 void free_class_times(int*** classTimes, int numClasses, int numDays);
 int _count_lines(FILE* file);
+void _count_options(char** lines, int numLines, int numClasses, int* optionCount);
 int _round_to(int value, int round);
 int _count_hours(int start, int stop, struct Time* hour);
 int _count_minutes(int start, int stop, struct Time* min);
 int _count_days(char start, char stop, struct Day* day);
 void _zero_string(char* string, int length);
 void _zero_time_array(int*** array, int length, int width, int* depth);
+void _zero_array(int* array, int length);
 
 FILE* output = fopen("output_schedule.txt", "w");
 
@@ -45,13 +47,18 @@ int main(int argc, const char* argv[]) {
 		printf("Error, could not open input file.\n");
 		return EXIT_FAILURE;
 	}
-	int numClasses = 1;
+	int numClasses = 6;
 	int numDays = 5;
 	int numHours = 10;
 	int periodsPerHour = 2;
 	int** schedule = blank_schedule(numDays, numHours, periodsPerHour);
 	int numOptions[] = {
-		6
+		6,
+		14,
+		1,
+		11,
+		1,
+		2
 	};
 	int*** classTimeArrays = (int***)malloc(sizeof(*classTimeArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
@@ -72,15 +79,7 @@ int main(int argc, const char* argv[]) {
 	_zero_time_array(classLengthArrays, numClasses, numDays, numOptions);
 
 	read_input(input, classTimeArrays, classLengthArrays, numClasses, numDays, 'M', numHours, 7, 30, periodsPerHour);
-	for (int i = 0; i < numClasses; ++i) {
-		for (int k = 0; k < numOptions[i]; ++k) {
-			for (int j = 0; j < numDays; ++j) {
-				printf("%d ", classTimeArrays[i][j][k]);
-			}
-			printf("\n");
-		}
-	}
-	// generate_schedule(numClasses, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
+	generate_schedule(numClasses, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
 	free(schedule);
 	free_class_times(classTimeArrays, numClasses, numDays);
 	free_class_times(classLengthArrays, numClasses, numDays);
@@ -178,12 +177,19 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 }
 
 void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, int numClasses, int numDays, char firstDay, int numHours, int firstHour, int firstMin, int periodsPerHour) {
-	int numLines = _count_lines(input);
-	int lineLen = 8 + 5 + 1 + 5;
-	char** lines = (char**)malloc(sizeof(*lines) * numLines);
+	int numLines    = _count_lines(input);
+	int lineLen     = 8 + 5 + 1 + 5;
+	char** lines    = (char**)malloc(sizeof(*lines) * numLines);
+
 	for (int i = 0; i < numLines; ++i) {
 		lines[i] = (char*)malloc(sizeof(*lines[i]) * lineLen);
 		fgets(lines[i], lineLen, input);
+	}
+	int* optionCount = (int*)malloc(sizeof(*optionCount) * numClasses);
+	_zero_array(optionCount, numClasses);
+	_count_options(lines, numLines, numClasses, optionCount);
+	for (int i = 0; i < numClasses; ++i) {
+		printf("%d: %d\n", i + 1, optionCount[i]);
 	}
 	
 	/* Linked Lists of Days, Hours, and Minutes */
@@ -272,6 +278,9 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 			}
 			++currentOption;
 		}
+		if (isspace(lines[i][0])) {
+			currentClass = 0;
+		}
 	}
 	for (int i = 0; i < numLines; ++i) {
 		free(lines[i]);
@@ -294,6 +303,21 @@ int _count_lines(FILE* file) {
 	}
 	fseek(file, 0, SEEK_SET);
 	return count;
+}
+
+void _count_options(char** lines, int numLines, int numClasses, int* optionCount) {
+	int currentClass = 0;
+	for(int i = 0; i < numLines; ++i) {
+		if (isdigit(lines[i][0])) {
+			currentClass = (int)lines[i][0] - 48;
+		}
+		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
+			++(optionCount[currentClass - 1]);
+		}
+		if (isspace(lines[i][0])) {
+			currentClass = 0;
+		}
+	}
 }
 
 int _round_to(int value, int round) {
@@ -365,5 +389,11 @@ void _zero_time_array(int*** array, int length, int width, int* depth) {
 				array[i][j][k] = 0;
 			}
 		}
+	}
+}
+
+void _zero_array(int* array, int length) {
+	for (int i = 0; i < length; ++i) {
+		array[i] = 0;
 	}
 }
