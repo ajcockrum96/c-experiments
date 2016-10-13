@@ -173,7 +173,6 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 	_zero_array(optionCount, numClasses);
 	_count_options(lines, numLines, numClasses, optionCount);
 	for (int i = 0; i < numClasses; ++i) {
-		printf("%d: %d\n", i + 1, optionCount[i]);
 		for (int j = 0; j < numDays; ++j) {
 			classTimeArrays[i][j]   = (int*)malloc(sizeof(*classTimeArrays[i][j]) * optionCount[i]);
 			classLengthArrays[i][j] = (int*)malloc(sizeof(*classLengthArrays[i][j]) * optionCount[i]);
