@@ -29,7 +29,9 @@ int _count_lines(FILE* file);
 int _round_to(int value, int round);
 int _count_hours(int start, int stop, struct Time* hour);
 int _count_minutes(int start, int stop, struct Time* min);
-
+int _count_days(char start, char stop, struct Day* day);
+void _zero_string(char* string, int length);
+void _zero_time_array(int*** array, int length, int width, int* depth);
 
 FILE* output = fopen("output_schedule.txt", "w");
 
@@ -58,6 +60,7 @@ int main(int argc, const char* argv[]) {
 			classTimeArrays[i][j] = (int*)malloc(sizeof(*classTimeArrays[i][j]) * numOptions[i]);
 		}
 	}
+	_zero_time_array(classTimeArrays, numClasses, numDays, numOptions);
 
 	int*** classLengthArrays = (int***)malloc(sizeof(*classLengthArrays) * numClasses);
 	for (int i = 0; i < numClasses; ++i) {
@@ -66,11 +69,12 @@ int main(int argc, const char* argv[]) {
 			classLengthArrays[i][j] = (int*)malloc(sizeof(*classLengthArrays[i][j]) * numOptions[i]);
 		}
 	}
+	_zero_time_array(classLengthArrays, numClasses, numDays, numOptions);
 
-	read_input(input, NULL, NULL, 1, 5, 'M', 10, 7, 30, 2);
+	read_input(input, classTimeArrays, classLengthArrays, numClasses, numDays, 'M', numHours, 7, 30, periodsPerHour);
 	for (int i = 0; i < numClasses; ++i) {
-		for (int j = 0; j < numDays; ++j) {
-			for (int k = 0; k < numOptions[i]; ++k) {
+		for (int k = 0; k < numOptions[i]; ++k) {
+			for (int j = 0; j < numDays; ++j) {
 				printf("%d ", classTimeArrays[i][j][k]);
 			}
 			printf("\n");
@@ -243,7 +247,8 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 	int   currentClass  = 0;
 	int   currentOption = 0;
 	char* classInfo     = (char*)malloc(sizeof(*classInfo) * lineLen);
-	char* classDays     = (char*)malloc(sizeof(*days) * numDays);
+	char* classDays     = (char*)malloc(sizeof(*classDays) * numDays);
+	_zero_string(classDays, numDays);
 	int   startHour     = 0;
 	int   startMin      = 0;
 	int   startPeriod   = 0;
@@ -259,11 +264,9 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 			strcpy(classInfo, lines[i]);
 			sscanf(classInfo, "%s %d:%d-%d:%d", classDays, &startHour, &startMin, &endHour, &endMin);
 			startPeriod = (_count_hours(firstHour, startHour, hour) * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(startMin, 30), min)) / periodLen;
-			printf("Start: %d\n", startPeriod);
 			endPeriod   = (_count_hours(firstHour, endHour, hour)   * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(endMin, 30), min)) / periodLen;
-			printf("Length: %d\n", endPeriod - startPeriod);
 			for (int j = 0; j < strlen(classDays); ++j) {
-				int dayIndex = _count_days(firstDay, classDays[i]);
+				int dayIndex = _count_days(firstDay, classDays[j], day);
 				classTimeArrays[currentClass - 1][dayIndex][currentOption] = startPeriod;
 				classLengthArrays[currentClass - 1][dayIndex][currentOption] = endPeriod - startPeriod;
 			}
@@ -336,7 +339,7 @@ int _count_minutes(int start, int stop, struct Time* min) {
 }
 
 int _count_days(char start, char stop, struct Day* day) {
-	struct Day* currentDay = &min[0];
+	struct Day* currentDay = &day[0];
 	while (currentDay->value != start) {
 		currentDay = currentDay->next;
 	}
@@ -347,4 +350,20 @@ int _count_days(char start, char stop, struct Day* day) {
 		++count;
 	}
 	return count;
+}
+
+void _zero_string(char* string, int length) {
+	for (int i = 0; i < length; ++i) {
+		string[i] = '\0';
+	}
+}
+
+void _zero_time_array(int*** array, int length, int width, int* depth) {
+	for (int i = 0; i < length; ++i) {
+		for (int j = 0; j < width; ++j) {
+			for (int k = 0; k < depth[i]; ++k) {
+				array[i][j][k] = 0;
+			}
+		}
+	}
 }
