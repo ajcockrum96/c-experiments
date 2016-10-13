@@ -234,7 +234,7 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 	int   periodLen    = TOTAL_MINUTES / periodsPerHour;
 	int   currentClass = 0;
 	char* classInfo    = (char*)malloc(sizeof(*classInfo) * lineLen);
-	char* days         = (char*)malloc(sizeof(*days) * numDays);
+	char* classDays         = (char*)malloc(sizeof(*days) * numDays);
 	int   startHour    = 0;
 	int   startMin     = 0;
 	int   startPeriod  = 0;
@@ -247,11 +247,15 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 		}
 		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
 			strcpy(classInfo, lines[i]);
-			sscanf(classInfo, "%s %d:%d-%d:%d", days, &startHour, &startMin, &endHour, &endMin);
+			sscanf(classInfo, "%s %d:%d-%d:%d", classDays, &startHour, &startMin, &endHour, &endMin);
 			startPeriod = (_count_hours(firstHour, startHour, hour) * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(startMin, 30), min)) / periodLen;
 			printf("Start: %d\n", startPeriod);
 			endPeriod   = (_count_hours(firstHour, endHour, hour)   * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(endMin, 30), min)) / periodLen;
 			printf("Length: %d\n", endPeriod - startPeriod);
+			for (int j = 0; j < strlen(classDays); ++j) {
+				int dayIndex = _count_days(firstDay, classDays[i]);
+				classTimeArrays[dayIndex]
+			}
 			/* Add class info to class___Arrays */
 		}
 	}
@@ -315,6 +319,20 @@ int _count_minutes(int start, int stop, struct Time* min) {
 			count -= TOTAL_MINUTES;
 		}
 		currentMin = currentMin->next;
+		++count;
+	}
+	return count;
+}
+
+int _count_days(char start, char stop, struct Day* day) {
+	struct Day* currentDay = &min[0];
+	while (currentDay->value != start) {
+		currentDay = currentDay->next;
+	}
+
+	int count = 0;
+	while (currentDay->value != stop) {
+		currentDay = currentDay->next;
 		++count;
 	}
 	return count;
