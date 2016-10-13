@@ -68,6 +68,14 @@ int main(int argc, const char* argv[]) {
 	}
 
 	read_input(input, NULL, NULL, 1, 5, 'M', 10, 7, 30, 2);
+	for (int i = 0; i < numClasses; ++i) {
+		for (int j = 0; j < numDays; ++j) {
+			for (int k = 0; k < numOptions[i]; ++k) {
+				printf("%d ", classTimeArrays[i][j][k]);
+			}
+			printf("\n");
+		}
+	}
 	// generate_schedule(numClasses, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
 	free(schedule);
 	free_class_times(classTimeArrays, numClasses, numDays);
@@ -231,19 +239,21 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 		}
 	}
 
-	int   periodLen    = TOTAL_MINUTES / periodsPerHour;
-	int   currentClass = 0;
-	char* classInfo    = (char*)malloc(sizeof(*classInfo) * lineLen);
-	char* classDays         = (char*)malloc(sizeof(*days) * numDays);
-	int   startHour    = 0;
-	int   startMin     = 0;
-	int   startPeriod  = 0;
-	int   endHour      = 0;
-	int   endMin       = 0;
-	int   endPeriod    = 0;
+	int   periodLen     = TOTAL_MINUTES / periodsPerHour;
+	int   currentClass  = 0;
+	int   currentOption = 0;
+	char* classInfo     = (char*)malloc(sizeof(*classInfo) * lineLen);
+	char* classDays     = (char*)malloc(sizeof(*days) * numDays);
+	int   startHour     = 0;
+	int   startMin      = 0;
+	int   startPeriod   = 0;
+	int   endHour       = 0;
+	int   endMin        = 0;
+	int   endPeriod     = 0;
 	for (int i = 0; i < numLines; ++i) {
 		if (isdigit(lines[i][0])) {
 			currentClass = (int)lines[i][0] - 48;
+			currentOption = 0;
 		}
 		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
 			strcpy(classInfo, lines[i]);
@@ -254,9 +264,10 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 			printf("Length: %d\n", endPeriod - startPeriod);
 			for (int j = 0; j < strlen(classDays); ++j) {
 				int dayIndex = _count_days(firstDay, classDays[i]);
-				classTimeArrays[dayIndex]
+				classTimeArrays[currentClass - 1][dayIndex][currentOption] = startPeriod;
+				classLengthArrays[currentClass - 1][dayIndex][currentOption] = endPeriod - startPeriod;
 			}
-			/* Add class info to class___Arrays */
+			++currentOption;
 		}
 	}
 	for (int i = 0; i < numLines; ++i) {
