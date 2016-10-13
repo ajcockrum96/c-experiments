@@ -67,7 +67,7 @@ int main(int argc, const char* argv[]) {
 		}
 	}
 
-	read_input(input, NULL, NULL, 1, 5, 'M', 10, 8, 30, 2);
+	read_input(input, NULL, NULL, 1, 5, 'M', 10, 7, 30, 2);
 	// generate_schedule(numClasses, numDays, numHours, periodsPerHour, numOptions, classTimeArrays, classLengthArrays, schedule);
 	free(schedule);
 	free_class_times(classTimeArrays, numClasses, numDays);
@@ -248,9 +248,9 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
 			strcpy(classInfo, lines[i]);
 			sscanf(classInfo, "%s %d:%d-%d:%d", days, &startHour, &startMin, &endHour, &endMin);
-			startPeriod = (_count_hours(firstHour, startHour, hour) * TOTAL_MINUTES + _count_minutes(firstMin, startMin, min)) / periodLen;
+			startPeriod = (_count_hours(firstHour, startHour, hour) * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(startMin, 30), min)) / periodLen;
 			printf("Start: %d\n", startPeriod);
-			endPeriod   = (_count_hours(firstHour, endHour, hour)   * TOTAL_MINUTES + _count_minutes(firstMin, endMin, min)) / periodLen;
+			endPeriod   = (_count_hours(firstHour, endHour, hour)   * TOTAL_MINUTES + _count_minutes(firstMin, _round_to(endMin, 30), min)) / periodLen;
 			printf("Length: %d\n", endPeriod - startPeriod);
 			/* Add class info to class___Arrays */
 		}
@@ -279,7 +279,7 @@ int _count_lines(FILE* file) {
 }
 
 int _round_to(int value, int round) {
-	int lower = (value % round) * round;
+	int lower = (value / round) * round;
 	int upper = lower + round;
 	if (abs(lower - value) < abs(upper - value)) {
 		return lower;
