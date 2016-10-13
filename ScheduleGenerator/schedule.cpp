@@ -27,6 +27,8 @@ void print_schedule(int** schedule, int numDays, int numHours, int periodsPerHou
 void free_class_times(int*** classTimes, int numClasses, int numDays);
 int _count_lines(FILE* file);
 int _round_to(int value, int round);
+int _count_hours(int start, int stop, struct Time* hour);
+int _count_minutes(int start, int stop, struct Time* min);
 
 
 FILE* output = fopen("output_schedule.txt", "w");
@@ -190,17 +192,17 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 			hour[i].prev = &hour[i - 1];
 		}
 	}
-	struct Time* min = (Time*)malloc(sizeof(*min) * TOTAL_MINUTES);
-	for (int i = 0; i < TOTAL_MINUTES; ++i) {
-		min[i].value = i + 1;
-		if ((i + 1) == TOTAL_MINUTES) {
+	struct Time* min = (Time*)malloc(sizeof(*min) * (TOTAL_MINUTES + 1));
+	for (int i = 0; i < TOTAL_MINUTES + 1; ++i) {
+		min[i].value = i;
+		if (i == TOTAL_MINUTES) {
 			min[i].next = &min[0];
 		}
 		else {
 			min[i].next = &min[i + 1];
 		}
 		if (i == 0) {
-			min[i].prev = &min[TOTAL_MINUTES - 1];
+			min[i].prev = &min[TOTAL_MINUTES];
 		}
 		else {
 			min[i].prev = &min[i - 1];
@@ -246,9 +248,10 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
 			strcpy(classInfo, lines[i]);
 			sscanf(classInfo, "%s %d:%d-%d:%d", days, &startHour, &startMin, &endHour, &endMin);
-			startPeriod = ((startHour - firstHour) * TOTAL_MINUTES - (startMin - firstMin)) / periodLen;
-			endPeriod   = ((endHour - firstHour)   * TOTAL_MINUTES - (endMin - firstMin))   / periodLen;
-			printf("Start: %d	Length:%d\n", startPeriod, endPeriod);
+			startPeriod = (_count_hours(firstHour, startHour, hour) * TOTAL_MINUTES + _count_minutes(firstMin, startMin, min)) / periodLen;
+			printf("Start: %d\n", startPeriod);
+			endPeriod   = (_count_hours(firstHour, endHour, hour)   * TOTAL_MINUTES + _count_minutes(firstMin, endMin, min)) / periodLen;
+			printf("Length: %d\n", endPeriod - startPeriod);
 			/* Add class info to class___Arrays */
 		}
 	}
@@ -284,4 +287,35 @@ int _round_to(int value, int round) {
 	else {
 		return upper;
 	}
+}
+
+int _count_hours(int start, int stop, struct Time* hour) {
+	struct Time* currentHour = &hour[0];
+	while (currentHour->value != start) {
+		currentHour = currentHour->next;
+	}
+
+	int count = 0;
+	while (currentHour->value != stop) {
+		currentHour = currentHour->next;
+		++count;
+	}
+	return count;
+}
+
+int _count_minutes(int start, int stop, struct Time* min) {
+	struct Time* currentMin = &min[0];
+	while (currentMin->value != start) {
+		currentMin = currentMin->next;
+	}
+
+	int count = 0;
+	while (currentMin->value != stop) {
+		if (currentMin->value == TOTAL_MINUTES) {
+			count -= TOTAL_MINUTES;
+		}
+		currentMin = currentMin->next;
+		++count;
+	}
+	return count;
 }
