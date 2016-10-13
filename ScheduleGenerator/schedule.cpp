@@ -4,6 +4,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#define TOTAL_MINUTES 60
+#define TOTAL_HOURS   12
+
 struct Time {
 	int value;
 	struct Time* next;
@@ -171,72 +174,92 @@ void read_input(FILE* input, int*** classTimeArrays, int*** classLengthArrays, i
 	
 	/* Linked Lists of Days, Hours, and Minutes */
 
-	struct Time* hour = malloc(sizeof(*hour) * 12);
-	for (int i = 0; i < 12; ++i) {
-		hour[i]->value = i + 1;
-		if ((i + 1) == 12) {
-			hour[i]->next = hour[0];
+	struct Time* hour = (Time*)malloc(sizeof(*hour) * TOTAL_HOURS);
+	for (int i = 0; i < TOTAL_HOURS; ++i) {
+		hour[i].value = i + 1;
+		if ((i + 1) == TOTAL_HOURS) {
+			hour[i].next = &hour[0];
 		}
 		else {
-			hour[i]->next = hour[i + 1];
+			hour[i].next = &hour[i + 1];
 		}
 		if (i == 0) {
-			hour[i]->prev = hour[11];
+			hour[i].prev = &hour[TOTAL_HOURS - 1];
 		}
 		else {
-			hour[i]->prev = hour[i - 1];
+			hour[i].prev = &hour[i - 1];
 		}
 	}
-	struct Time* min = malloc(sizeof(*min) * 60);
-	for (int i = 0; i < 60; ++i) {
-		min[i]->value = i + 1;
-		if ((i + 1) == 60) {
-			min[i]->next = min[0];
+	struct Time* min = (Time*)malloc(sizeof(*min) * TOTAL_MINUTES);
+	for (int i = 0; i < TOTAL_MINUTES; ++i) {
+		min[i].value = i + 1;
+		if ((i + 1) == TOTAL_MINUTES) {
+			min[i].next = &min[0];
 		}
 		else {
-			min[i]->next = min[i + 1];
+			min[i].next = &min[i + 1];
 		}
 		if (i == 0) {
-			min[i]->prev = min[59];
+			min[i].prev = &min[TOTAL_MINUTES - 1];
 		}
 		else {
-			min[i]->prev = min[i - 1];
+			min[i].prev = &min[i - 1];
 		}
 	}
-	struct Day* day = malloc(sizeof(*day) * 7);
-	day[0]->value = 'S';
-	day[1]->value = 'M';
-	day[2]->value = 'T';
-	day[3]->value = 'W';
-	day[4]->value = 'R';
-	day[5]->value = 'F';
-	day[6]->value = 'E';
-	for (int i = 0; i < 60; ++i) {
+	struct Day* day = (Day*)malloc(sizeof(*day) * 7);
+	day[0].value = 'S';
+	day[1].value = 'M';
+	day[2].value = 'T';
+	day[3].value = 'W';
+	day[4].value = 'R';
+	day[5].value = 'F';
+	day[6].value = 'E';
+	for (int i = 0; i < 7; ++i) {
 		if ((i + 1) == 7) {
-			min[i]->next = min[0];
+			day[i].next = &day[0];
 		}
 		else {
-			min[i]->next = min[i + 1];
+			day[i].next = &day[i + 1];
 		}
 		if (i == 0) {
-			min[i]->prev = min[6];
+			day[i].prev = &day[6];
 		}
 		else {
-			min[i]->prev = min[i - 1];
+			day[i].prev = &day[i - 1];
 		}
 	}
 
-	int currentClass = 0;
-	char* classInfo  = malloc(sizeof(*classInfo) * lineLen);
+	int   periodLen    = TOTAL_MINUTES / periodsPerHour;
+	int   currentClass = 0;
+	char* classInfo    = (char*)malloc(sizeof(*classInfo) * lineLen);
+	char* days         = (char*)malloc(sizeof(*days) * numDays);
+	int   startHour    = 0;
+	int   startMin     = 0;
+	int   startPeriod  = 0;
+	int   endHour      = 0;
+	int   endMin       = 0;
+	int   endPeriod    = 0;
 	for (int i = 0; i < numLines; ++i) {
 		if (isdigit(lines[i][0])) {
 			currentClass = (int)lines[i][0] - 48;
 		}
-		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass < numClasses)) {
+		if (isalpha(lines[i][0]) && (currentClass > 0 && currentClass <= numClasses)) {
 			strcpy(classInfo, lines[i]);
+			sscanf(classInfo, "%s %d:%d-%d:%d", days, &startHour, &startMin, &endHour, &endMin);
+			startPeriod = ((startHour - firstHour) * TOTAL_MINUTES - (startMin - firstMin)) / periodLen;
+			endPeriod   = ((endHour - firstHour)   * TOTAL_MINUTES - (endMin - firstMin))   / periodLen;
+			printf("Start: %d	Length:%d\n", startPeriod, endPeriod);
 			/* Add class info to class___Arrays */
 		}
 	}
+	for (int i = 0; i < numLines; ++i) {
+		free(lines[i]);
+	}
+	free(lines);
+	free(classInfo);
+	free(hour);
+	free(min);
+	free(day);
 }
 
 int _count_lines(FILE* file) {
