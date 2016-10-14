@@ -47,7 +47,7 @@ int main(int argc, const char* argv[]) {
 		printf("Error, could not open input file.\n");
 		return EXIT_FAILURE;
 	}
-	int numClasses = 6;
+	int numClasses = 7;
 	int numDays = 5;
 	int numHours = 10;
 	int periodsPerHour = 2;
@@ -120,7 +120,7 @@ void generate_schedule(int numClasses, int numDays, int numHours, int periodsPer
 				int start = classTimeArrays[numClasses - 1][j][i];
 				int end = start + classLengthArrays[numClasses - 1][j][i];
 				for (int k = start; k < end; ++k) {
-					if (schedule[j][k] != 0) {
+					if (schedule[j][k] != 0 && schedule[j][k] != 7) {
 						abort = true;
 						break;
 					}
